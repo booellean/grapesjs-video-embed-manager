@@ -73,7 +73,7 @@ Directly in the browser
 ```html
 <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet"/>
 <script src="https://unpkg.com/grapesjs"></script>
-<script src="path/to/grapesjs-youtube-manager.min.js"></script>
+<script src="path/to/grapesjs-video-embed-manager.min.js"></script>
 
 <div id="gjs"></div>
 
@@ -81,9 +81,14 @@ Directly in the browser
   var editor = grapesjs.init({
       container: '#gjs',
       // ...
-      plugins: ['grapesjs-youtube-manager'],
+      plugins: ['grapesjs-video-embed-manager'],
       pluginsOpts: {
-        'grapesjs-youtube-manager': { /* options */ }
+        'grapesjs-video-embed-manager': { 
+          preloader : 'https://gifimage.net/wp-content/uploads/2018/04/loading-icon-gif-6.gif',
+          resources: [ 'youtube', 'vimeo', 'local' ],
+          per_page: 5,
+          youtubeLoadCallback: () => 'hey!',
+          youtubeLoadUrl: '/fake/callback'
       }
   });
 </script>
@@ -92,7 +97,7 @@ Directly in the browser
 Modern javascript
 ```js
 import grapesjs from 'grapesjs';
-import plugin from 'grapesjs-youtube-manager';
+import plugin from 'grapesjs-video-embed-manager';
 import 'grapesjs/dist/css/grapes.min.css';
 
 const editor = grapesjs.init({
