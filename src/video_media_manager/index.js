@@ -1,100 +1,11 @@
 import defaults from './config/config';
+const css =  require('./css/styles.js');
 import pluginBlocks from 'grapesjs-blocks-basic';
 
 export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, options) => {
     console.log(editor)
     // TODO: remove
     pluginBlocks(editor, {})
-
-    // Style specific event listener
-    window.addEventListener('resize', setPagination);
-
-    // Predefined css
-    const css = `
-        #video-container > #video-list > li.video-container > figure > img {
-            width: 100%;
-        }
-
-        #video-modal > .gjs-mdl-dialog {
-            height: 80vh;
-            width: 75vw;
-            max-width: 100%;
-            display: flex;
-            flex-flow: column nowrap;
-        }
-
-        #video-modal > .gjs-mdl-dialog > .gjs-mdl-content {
-            flex-grow: 1;
-            overflow: hidden;
-        }
-
-        #video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div { height: 100% }
-        #video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container {
-            height: 100%;
-            display: flex;
-            flex-flow: column nowrap;
-        }
-
-        #video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > #video-container {
-            flex-grow: 1;
-            overflow-y: scroll;
-            overflow-x: hidden;
-        }
-
-        #video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > #video-container > ul#video-list {
-            display: flex;
-            flex-flow: row wrap;
-            justify-content: flex-start;
-            box-sizing: border-box;
-            flex-grow: 1;
-        }
-
-        #video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > #video-container > ul#video-list,
-        #video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > footer#video-paginate-footer > nav#video-paginate > ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        #video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > #video-container > ul#video-list li.video-container{
-            width: 33.33%;
-            box-sizing:border-box;
-        }
-
-        #video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > #video-container > ul#video-list li.video-container > figure{
-            margin: .5rem;
-        }
-
-        @media screen and (max-width: 61.875em){
-            #video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > #video-container > ul#video-list li.video-container{
-                width: 50%;
-            }
-        }
-        
-        @media screen and (max-width: 33.75em){
-            #video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > #video-container > ul#video-list li.video-container{
-                width: 100%;
-            }
-        }
-
-        #video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > footer#video-paginate-footer > nav#video-paginate > ul {
-            display: flex;
-            flex-flow: row wrap;
-            justify-content: center;
-            align-items: center;
-            padding-top: 1em;
-        }
-
-        #video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > footer#video-paginate-footer > nav#video-paginate > ul > li {
-            padding: 0 .5em;
-        }
-
-        #video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > footer#video-paginate-footer > nav#video-paginate > ul > li > a,
-        #video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > footer#video-paginate-footer > nav#video-paginate > ul > li > a > svg {
-            pointer-events: none
-        }
-
-    `
 
     // Globals
     let Modal, component;
@@ -155,9 +66,13 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
         run(editor, sender) {
             console.log('open-videos');
             console.log(editor, sender)
+            // Add an event listener to make pagination readable on small screen sizes
+            window.addEventListener('resize', setPaginationBind )
             return open();
         },
         stop(editor, sender) {
+            // Remove event listender
+            window.removeEventListener('resize', setPaginationBind )
             console.log('open-videos stopped');
             console.log(editor, sender)
         },
@@ -276,9 +191,12 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
     const createTypeTabs = (sources) => {
         for(let i = 0; i < sources.length; i++){
             let button = document.createElement('button');
-            button.setAttribute('class', 'tablinks'), button.setAttribute('data-index', i);
-            button.innerHTML = sources[i][0].toUpperCase() + sources[i].substring(1);
+            let span = document.createElement('span');
+            button.className = 'tablinks gjs-pn-btn gjs-two-color', button.setAttribute('data-index', i);
+            if(i == 0) button.classList.add('gjs-four-color');
+            span.innerHTML = sources[i][0].toUpperCase() + sources[i].substring(1);
             button.onclick = setType;
+            button.appendChild(span);
 
             aside.appendChild(button);
         }
@@ -289,8 +207,8 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
         // Otherwise this function is called once
         if(e.currentTarget || e.target){
             let button = e.currentTarget || e.target; // browser failsafe
-            button.classList.add('active');
-            document.querySelector(`button.tablinks[data-index="${currentIndex}"]`).classList.remove('active')
+            button.classList.add('gjs-four-color');
+            document.querySelector(`button.tablinks[data-index="${currentIndex}"]`).classList.remove('gjs-four-color')
             currentIndex = button.dataset.index;
         }
 
@@ -423,6 +341,7 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
     }
 
     const setPagination = () => {
+        console.log('set pagination called');
         pagination.innerHTML = '';
         let videosData = opts[`${current}Data`];
         total_videos = videosData.pageInfo ? videosData.pageInfo.totalResults : videosData.total;
@@ -440,12 +359,10 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
             let r = document.createElement('li');
             r.setAttribute('aria-hidden', true), r.className = 'dots more-previous', r.innerHTML = '...';
 
-            if(total_pages > trail_amount){
-                // Create first page chevron
-                if(current != 'youtube') ul.appendChild(createPaginateIcon('First Page', 1, 'page-nums chevrons first-chevrons', 1, 'video-paginate-icons', first_page.d));
-                ul.appendChild(createPaginateIcon('Previous Page', (current_page - 1 <= 1 ? 1 : current_page -1 ), 'page-nums chevrons first-chevrons', (current_page - 1 <= 1 ? 1 : current_page -1 ), 'video-paginate-icons', previous_page.d));
-                ul.appendChild(r);
-            }
+            // Create first page chevron
+            if(current != 'youtube') ul.appendChild(createPaginateIcon('First Page', 1, 'page-nums chevrons first-chevrons', 1, 'video-paginate-icons', first_page.d));
+            ul.appendChild(createPaginateIcon('Previous Page', (current_page - 1 <= 1 ? 1 : current_page -1 ), 'page-nums chevrons first-chevrons', (current_page - 1 <= 1 ? 1 : current_page -1 ), 'video-paginate-icons', previous_page.d));
+            ul.appendChild(r);
 
             // This is not setup to load on anything past page 1. May fix in the future.
             let elements = [];
@@ -480,14 +397,12 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
             // TODO: fix;
             elements.map( el => ul.appendChild(el))
 
-            if(total_pages > trail_amount){
-                r = r.cloneNode(true);
-                r.className = 'dots more-next';
-                // Create last page chevron
-                ul.appendChild(r);
-                ul.appendChild(createPaginateIcon('Next Page', (current_page +1 >= total_pages ? total_pages : current_page + 1), 'page-nums chevrons last-chevrons', (current_page +1 >= total_pages ? total_pages : current_page + 1), 'video-paginate-icons', next_page.d));
-                if(current != 'youtube') ul.appendChild(createPaginateIcon('Last Page', total_pages, 'page-nums chevrons last-chevrons', total_pages, 'video-paginate-icons', last_page.d));
-            }
+            r = r.cloneNode(true);
+            r.className = 'dots more-next';
+            // Create last page chevron
+            ul.appendChild(r);
+            ul.appendChild(createPaginateIcon('Next Page', (current_page +1 >= total_pages ? total_pages : current_page + 1), 'page-nums chevrons last-chevrons', (current_page +1 >= total_pages ? total_pages : current_page + 1), 'video-paginate-icons', next_page.d));
+            if(current != 'youtube') ul.appendChild(createPaginateIcon('Last Page', total_pages, 'page-nums chevrons last-chevrons', total_pages, 'video-paginate-icons', last_page.d));
 
             pagination.appendChild(ul);
         }else{
@@ -495,9 +410,10 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
         }
 
         updatePaginationStyles();
-        // let pageInfo = videosData.pageInfo ? videosData.pageInfo : null;
-        // if(pageInfo) return;
     }
+
+    // Ignore this. This is only here so the event listeners for resetting pagination on resize work
+    const setPaginationBind = setPagination.bind(this);
 
     const createPaginateIcon = (ariaLabel, dataPage, liClasses, posinset, svgClasses = null, paths = null) =>{
         console.log('icon created');
