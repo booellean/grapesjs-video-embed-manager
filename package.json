@@ -1,0 +1,25 @@
+{
+  "name": "grapesjs-video-embed-manager",
+  "version": "1.0.0",
+  "description": "Youtube Manager",
+  "main": "dist/grapesjs-video-embed-manager.min.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/booellean/grapesjs-video-embed-manager.git"
+  },
+  "scripts": {
+    "start": "grapesjs-cli serve --host=0.0.0.0",
+    "build": "grapesjs-cli build",
+    "bump": "npm version patch -m 'Bump v%s'"
+  },
+  "keywords": [
+    "grapesjs",
+    "plugin"
+  ],
+  "devDependencies": {
+    "grapesjs": "^0.17.27",
+    "grapesjs-blocks-basic": "^0.1.8",
+    "grapesjs-cli": "^2.0.0"
+  },
+  "license": "MIT"
+}

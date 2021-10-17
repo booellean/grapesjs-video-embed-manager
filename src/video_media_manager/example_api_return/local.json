@@ -1,0 +1,48 @@
+{
+    "page": 1,
+    "items": [
+        {
+            "id": 1,
+            "poster": "https://cdn.videvo.net/videvo_files/video/premium/getty_104/customThumbnails/istock-947748690.jpg",
+            "source": "https://cdn.videvo.net/videvo_files/video/premium/getty_104/large_watermarked/istock-947748690_preview.mp4",
+            "height": 409,
+            "width": 727,
+            "snippet": {
+                "publishedAt": "2021-10-01T10:06:43Z",
+                "title": "The Door Opens",
+                "description": "Doors are Opening for our heros yada yada.",
+                "thumbnails": {
+                    "default": {
+                    "url": "https://cdn.videvo.net/videvo_files/video/premium/getty_104/customThumbnails/istock-947748690.jpg",
+                    "width": 120,
+                    "height": 90
+                    },
+                    "medium": {
+                    "url": "https://cdn.videvo.net/videvo_files/video/premium/getty_104/customThumbnails/istock-947748690.jpg",
+                    "width": 320,
+                    "height": 180
+                    },
+                    "high": {
+                    "url": "https://cdn.videvo.net/videvo_files/video/premium/getty_104/customThumbnails/istock-947748690.jpg",
+                    "width": 480,
+                    "height": 360
+                    },
+                    "standard": {
+                    "url": "https://cdn.videvo.net/videvo_files/video/premium/getty_104/customThumbnails/istock-947748690.jpg",
+                    "width": 640,
+                    "height": 480
+                    },
+                    "maxres": {
+                    "url": "https://cdn.videvo.net/videvo_files/video/premium/getty_104/customThumbnails/istock-947748690.jpg",
+                    "width": 1280,
+                    "height": 720
+                    }
+                }
+            }
+        }
+    ],
+    "pageInfo": {
+        "totalResults": 1,
+        "resultsPerPage": 5
+    }
+}
