@@ -1,4 +1,4 @@
-# Youtube Manager
+# Video Embed Manager
 
 [DEMO](##)
 > **Provide a live demo of your plugin**
@@ -9,7 +9,7 @@ To help you in this process here below you will find the necessary HTML/CSS/JS, 
 ```html
 <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet">
 <script src="https://unpkg.com/grapesjs"></script>
-<script src="https://unpkg.com/grapesjs-youtube-manager"></script>
+<script src="https://unpkg.com/grapesjs-video-embed-manager"></script>
 
 <div id="gjs"></div>
 ```
@@ -21,7 +21,7 @@ const editor = grapesjs.init({
   height: '100%',
   fromElement: true,
   storageManager: false,
-  plugins: ['grapesjs-youtube-manager'],
+  plugins: ['grapesjs-video-embed-manager'],
 });
 ```
 
@@ -36,7 +36,7 @@ body, html {
 
 ## Summary
 
-* Plugin name: `grapesjs-youtube-manager`
+* Plugin name: `grapesjs-video-embed-manager`
 * Components
     * `component-id-1`
     * `component-id-2`
@@ -59,11 +59,11 @@ body, html {
 ## Download
 
 * CDN
-  * `https://unpkg.com/grapesjs-youtube-manager`
+  * `https://unpkg.com/grapesjs-video-embed-manager`
 * NPM
-  * `npm i grapesjs-youtube-manager`
+  * `npm i grapesjs-video-embed-manager`
 * GIT
-  * `git clone https://github.com/booellean/grapesjs-youtube-manager.git`
+  * `git clone https://github.com/booellean/grapesjs-video-embed-manager.git`
 
 
 
@@ -121,8 +121,8 @@ const editor = grapesjs.init({
 Clone the repository
 
 ```sh
-$ git clone https://github.com/booellean/grapesjs-youtube-manager.git
-$ cd grapesjs-youtube-manager
+$ git clone https://github.com/booellean/grapesjs-video-embed-manager.git
+$ cd grapesjs-video-embed-manager
 ```
 
 Install dependencies
