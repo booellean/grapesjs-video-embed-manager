@@ -4,7 +4,7 @@ module.exports = `
 }
 
 #video-modal > .gjs-mdl-dialog {
-    height: 80vh;
+    height: 85vh;
     width: 75vw;
     max-width: 100%;
     display: flex;

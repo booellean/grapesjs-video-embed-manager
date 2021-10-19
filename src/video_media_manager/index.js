@@ -67,12 +67,13 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
             console.log('open-videos');
             console.log(editor, sender)
             // Add an event listener to make pagination readable on small screen sizes
-            window.addEventListener('resize', setPaginationBind )
+            window.addEventListener('resize', setPaginationBind );
             return open();
         },
         stop(editor, sender) {
             // Remove event listender
-            window.removeEventListener('resize', setPaginationBind )
+            window.removeEventListener('resize', setPaginationBind );
+            dataContainer.remove();
             console.log('open-videos stopped');
             console.log(editor, sender)
         },
@@ -193,7 +194,7 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
             let button = document.createElement('button');
             let span = document.createElement('span');
             button.className = 'tablinks gjs-pn-btn gjs-two-color', button.setAttribute('data-index', i);
-            if(i == 0) button.classList.add('gjs-four-color');
+            if(i == currentIndex) button.classList.add('gjs-four-color');
             span.innerHTML = sources[i][0].toUpperCase() + sources[i].substring(1);
             button.onclick = setType;
             button.appendChild(span);
@@ -229,14 +230,29 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
 
 
     const getVideos = () => {
+        query = buildQuery();
 
         let loadUrl = opts[`${current}LoadUrl`];
         let callbackUrl = opts[`${current}LoadCallback`];
+        preloader.style.display = 'block';
 
         // TODO: setup the storage manager to save this and load here before hand
         // TODO: set page data manually if youtube
         // Call setData here...
-        return loadUrl ? console.log('do stuff') : callbackUrl ? console.log('other stuff') : console.log('no stuff')
+        console.log(loadUrl + query);
+        return loadUrl ? 
+            fetch( loadUrl + query )
+            .then( res => res.json() )
+            .then( (data) =>{
+                if(current == 'youtube') data.page = current_page;
+                opts[`${current}Data`] = data;
+                console.log(data);
+                preloader.style.display = 'none';
+                return setData();
+            })
+            .catch( error => console.log(error)) // TODO: handle errors
+            : callbackUrl ? console.log('other stuff')
+            : console.log('no stuff')
     }
 
     const setVideos = () => {
@@ -249,6 +265,20 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
                 createVideoThumb(videos[i], i);
             }
         }
+    }
+
+    const buildQuery = () => {
+        let q = '';
+
+        if(opts.per_page) q += (q.length ? '&' : '?') + 'per_page=' + opts.per_page
+
+        if(opts[`${current}Data`] && (opts[`${current}Data`].nextPageToken || opts[`${current}Data`].prevPageToken)){
+            q += (q.length ? '&' : '?') + 'page_token=' + (current_page > opts[`${current}Data`].page ? opts[`${current}Data`].nextPageToken : opts[`${current}Data`].prevPageToken)
+        }else if(opts[`${current}Data`] && opts[`${current}Data`].page){
+            q += (q.length ? '&' : '?') + 'page=' + current_page
+        }
+
+        return q;
     }
 
     const createVideoThumb = (v, index) => {
@@ -341,7 +371,6 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
     }
 
     const setPagination = () => {
-        console.log('set pagination called');
         pagination.innerHTML = '';
         let videosData = opts[`${current}Data`];
         total_videos = videosData.pageInfo ? videosData.pageInfo.totalResults : videosData.total;
@@ -416,7 +445,6 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
     const setPaginationBind = setPagination.bind(this);
 
     const createPaginateIcon = (ariaLabel, dataPage, liClasses, posinset, svgClasses = null, paths = null) =>{
-        console.log('icon created');
         let li = document.createElement('li');
         li.onclick = updatePage;
         li.setAttribute('aria-label', ariaLabel);
@@ -463,25 +491,16 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
     }
 
     const updatePage = (e) => {
-        console.log(e);
-        return;
         // TODO: figure out page query
         let page = parseInt(e.currentTarget.dataset.page);
 
         if(current_page === page) return;
 
         if(page){
-            // Reset Query
-            opts.per_page ? query = '?per_page=' + opts.per_page + '&' : '?';
-
-            if(page > current_page){
-                query += 'page_token=' + videosData.nextPageToken;
-            }else{
-                query += 'page_token=' + videosData.prevPageToken;
-            }
+            current_page = page;
+            query = buildQuery();
 
             getVideos();
-            current_page = page;
         }
     }
 
