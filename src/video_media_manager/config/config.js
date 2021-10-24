@@ -22,10 +22,18 @@ export default {
     per_page: 12,
   
     // Custom headers to pass with the upload request
-    headers: {},
+    youtubeHeaders: {},
+
+    vimeoHeaders: {},
+
+    localHeaders: {},
   
     // Custom parameters to pass with the upload request, eg. csrf token
-    params: {},
+    youtubeParams: {},
+
+    vimeoParams: {},
+
+    localParams: {},
 
     // The local url for video list thumbnail data
     localLoadUrl: null,
@@ -39,13 +47,15 @@ export default {
     // If you prefer to use a callback on the frontend, then put it here
     // This plugin will always default to the url, so that must be set to null
     // This option is only for youtube since you can query public videos
+    // If you are doing anything with promises, remeber to pass this as an async function
+    // NEVER pass private data here. It is public and can be seen by everyone, even if only trusted users are using this
     // @example
-    // youtubeLoadCallback: () => {
+    // youtubeLoadCallback: async (query, params) => { // query and params will be passed by the plugin by default, but are optional depending on your callback
     //                          const {google} = require('googleapis');
     //
     //                          const youtube = google.youtube({
     //                            version: 'v3',
-    //                            auth: process.env.ERF_APOSTROPHE_TMCE_YOUTUBE_API_KEY,
+    //                            auth: your_public_auth_key,
     //                          });
     //
     //                          let api_key = {EXAMPLE_KEY}
@@ -64,7 +74,8 @@ export default {
     //
     //                          if(vids && vids.data) return vids.data;
     //
-    //                          return { message: "Videos could not be gotten.", error : vids }
+    //                          // Please remember to error handle. The plugin will check if an error was passed
+    //                          return { status: '301', message: 'there was an error }
     //                       }
     youtubeLoadCallback: null,
   

@@ -3,6 +3,10 @@ module.exports = `
     width: 100%;
 }
 
+#video-container > #preloader {
+    width: 100%;
+}
+
 #video-modal > .gjs-mdl-dialog {
     height: 85vh;
     width: 75vw;
@@ -30,6 +34,30 @@ module.exports = `
     overflow-y: auto;
 }
 
+#video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > #video-container > .video-error {
+    text-align: center;
+    width: 100%;
+    border-bottom: 1px solid rgba(0,0,0,.2);
+    border-top: 1px solid rgba(0,0,0,.2);
+    background: #444;
+    margin: 0;
+    box-sizing: border-box;
+    position: absolute;
+    cursor: pointer;
+    overflow: hidden;
+    left: 0;
+    right: 0;
+    transition: height .3s ease-in-out, opacity .3s ease-in-out;
+}
+
+#video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > #video-container > .video-error > h2 {
+    padding: 1em;
+    margin: 0;
+}
+
+#video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > #video-container > .video-error:hover > h2 {
+    color: #d278c9;
+}
 
 #video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > aside#video-tabs > .tablinks{
     font-size: .9em;
@@ -122,6 +150,7 @@ module.exports = `
 #video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > footer#video-paginate-footer{
     width: 100%;
     z-index: 5;
+    border-top: 1px solid rgba(0,0,0,.2);
 }
 
 #video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > footer#video-paginate-footer > nav#video-paginate{
@@ -133,7 +162,7 @@ module.exports = `
     flex-flow: row wrap;
     justify-content: center;
     align-items: center;
-    padding-top: 1em;
+    padding: 1em;
 }
 
 #video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > footer#video-paginate-footer > nav#video-paginate > ul[role=menubar] li{
@@ -154,7 +183,6 @@ module.exports = `
 }
 
 #video-modal > .gjs-mdl-dialog > .gjs-mdl-content > div > #data-container > footer#video-paginate-footer > nav#video-paginate > ul[role=menubar] li > .disabled-link{
-    /* TODO: correct color */
     color: #505050;
 }
 

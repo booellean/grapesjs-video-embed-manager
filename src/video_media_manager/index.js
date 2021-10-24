@@ -3,20 +3,49 @@ const css =  require('./css/styles.js');
 import pluginBlocks from 'grapesjs-blocks-basic';
 
 export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, options) => {
+    const domcv = editor.DomComponents.getType('video');
     console.log(editor)
+    console.log(domcv);
     // TODO: remove
+
+    let dblclick = domcv.view.prototype.events.dblclick;
+
+    // This is a little broken, but click events should never have more than an event passed
+    // TODO: notify that this is occuring to inform devs
+    domcv.view.prototype.events.dblclick = 'onDblClick';
+    domcv.view.prototype.onDblClick = function(e) {
+        // Call original event if this was already setup
+        // Video component normally doesn't have a double click event, so we should be safe
+        if(dblclick) domcv.view.prototype[dblclick](e);
+        editor.runCommand('open-videos');
+        component = editor.getSelected();
+    };
+
+    // TODO remove
     pluginBlocks(editor, {})
 
     // Globals
+
+    // Modal and current component
     let Modal, component;
+
+    // Universal options
     const opts = {...defaults, ...options};
+
+    // current page of query.
     let current_page = 1;
-    let preloader, dataContainer, container, aside, videoList, footer, pagination;
-    (opts.preloader ?  (preloader = document.createElement('img'), preloader.src = opts.preloader, preloader.setAttribute('alt', 'Loading...')) : (preloader = document.createElement('h2'), preloader.innerHTML = 'Loading...'), preloader.id="preloader");
+
+    // Html defaults
+    let preloader, error, dataContainer, container, aside, videoList, footer, pagination;
+
+    // pagination variables
     let query, trail_amount, total_pages, total_videos;
+
     let large_trail_amount = 10,
         medium_trail_amount = 5,
         small_trail_amount = 3;
+
+    // current selected resource and index of resource item
     let current, currentIndex = 0;
     
     // icons
@@ -25,34 +54,9 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
     let next_page = { d: "M 8 3 L 14 12 L 8 21 L 12 21 L 18 12 L 12 3 L 8 3 z" };
     let previous_page = { d: "M 13 3 L 7 12 L 13 21 L 17 21 L 11 12 L 17 3 L 13 3 z" };
 
-    // Error Messages
-    // let messages = {},
-    // e = 10,
-    // b = 11,
-    // w = 12,
-    // C = 13,
-    // L = 14,
-    // D = 15,
-    // t = 21,
-    // r = 22;
-    // messages[e] = "Video cannot be loaded from the passed link.";
-    // messages[b] = "Error during load videos request.";
-    // messages[w] = "Missing videoManagerLoadURL option.";
-    // messages[C] = "Parsing load response failed.";
-    // messages[L] = "Missing video object.";
-    // messages[D] = "Missing video URL.";
-    // messages[t] = "Error during delete video request.";
-    // messages[r] = "Missing videoManagerDeleteURL option."; 
+    // Error animation timeout
+    let timeout;
 
-    // console.log(opts);
-
-
-    // TODO: create a better listener
-    // editor.on('all', (model, opts, a) => {
-    //     // if(model.attributes.type == 'video'){
-    //         console.log(opts, a)
-    //     // }
-    // })
     // TODO: create a better listener
     editor.on('component:add', (model) => {
         if(model.attributes.type == 'video'){
@@ -61,6 +65,11 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
             editor.runCommand('open-videos');
         }
     })
+
+    // editor.on('all', (a, b, c) => {
+    //     console.log(a, b, c);
+    // })
+
 
     editor.Commands.add('open-videos', {
         run(editor, sender) {
@@ -136,13 +145,23 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
         setVideos();
         setPagination();
         Modal.setContent(dataContainer);
+        console.log(component);
     }
 
     // This should ideally be called once per page load
     const getInitialHtmlElements = () => {
 
+        (opts.preloader ?  (preloader = document.createElement('img'), preloader.src = opts.preloader, preloader.setAttribute('alt', 'Loading...')) : (preloader = document.createElement('h2'), preloader.innerHTML = 'Loading...'), preloader.id="preloader")
+
         dataContainer = document.createElement('div');
         dataContainer.id = 'data-container';
+
+        error = document.createElement('div');
+        error.appendChild(document.createElement('h2'));
+        error.className = 'video-error';
+        error.onclick = hideError;
+        error.style.display = 'none';
+        error.style.height = '0px';
 
         let style = document.createElement('style');
         style.innerHTML = css;
@@ -165,9 +184,10 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
         pagination.id = 'video-paginate';
         footer.appendChild(pagination);
 
-        container.appendChild(preloader), container.appendChild(videoList);
+        container.appendChild(error), container.appendChild(preloader), container.appendChild(videoList);
         dataContainer.appendChild(container), dataContainer.appendChild(footer);
 
+        Modal.setContent(dataContainer);
     }
 
     const renderHtml = () => {
@@ -175,7 +195,7 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
 
         // If no resources were provided, we can't make any calls
         if(!opts.resources || !opts.resources.length){
-            return renderError();
+            return errorHandling(412, opts.resources, 'You did not provide any video resources when initiating the plugin. Please pass the parameters "youtube", "vimeo", and/or "local" to the plugin option "resources" to get started.');
         }
 
         // If there's more than one resource, create tabs to cycle through
@@ -214,12 +234,12 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
         }
 
         current = opts.resources[currentIndex];
-        if(!opts.resources[currentIndex]) return errorHandling();// TODO: return error Handling
+        if(!current) return errorHandling(204, current, 'You seem to be requesting a video resource that doesn\'t exit!');
         
         // Check if the manager already has data to be loaded
         // Also used for example purposes
         if(opts[`${current}Data`]){
-            preloader.style.display = 'none';
+            showVideos();
             // Reminder, youtube page data has to be manually set
             current_page = opts[`${current}Data`].page;
             return setData();
@@ -229,41 +249,65 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
     }
 
 
-    const getVideos = () => {
+    const getVideos = async () => {
         query = buildQuery();
 
         let loadUrl = opts[`${current}LoadUrl`];
-        let callbackUrl = opts[`${current}LoadCallback`];
-        preloader.style.display = 'block';
+        let callback = opts[`${current}LoadCallback`];
+        showPreloader();
+
+        let params = opts[`${current}Params`] ? opts[`${current}Params`] : {};
+        params['headers'] = ( opts[`${current}Headers`] ? opts[`${current}Headers`] : {} );
 
         // TODO: setup the storage manager to save this and load here before hand
-        // TODO: set page data manually if youtube
         // Call setData here...
-        console.log(loadUrl + query);
+
         return loadUrl ? 
-            fetch( loadUrl + query )
-            .then( res => res.json() )
-            .then( (data) =>{
-                if(current == 'youtube') data.page = current_page;
-                opts[`${current}Data`] = data;
-                console.log(data);
-                preloader.style.display = 'none';
-                return setData();
+            fetch( loadUrl + query, params )
+            .then( async res => {
+                let data = await res.json();
+
+                if(res.ok){
+                    if(current == 'youtube') data.page = current_page;
+                    opts[`${current}Data`] = data;
+                    showVideos();
+                    return setData();
+                }
+
+                try{
+                    return errorHandling(res.status, loadUrl + query, data.response.data.error.message)
+                }catch(error){
+                    throw new Error(res.statusText)
+                }
             })
-            .catch( error => console.log(error)) // TODO: handle errors
-            : callbackUrl ? console.log('other stuff')
-            : console.log('no stuff')
+            .catch( err => {
+                return errorHandling(500, loadUrl + query, err)
+            })
+            : callback ?  handleCallback(callback, query, params)
+            : errorHandling(412, loadUrl + query +'; '+ callback, 'There was no callback or load url provided for the ' + current + ' resource.')
+    }
+
+    const handleCallback = async (callback, query, params) => {
+        let call = await callback(query, params);
+
+        if(call.error) return errorHandling(error.status, callback, error.message)
+
+        opts[`${current}Data`] = call;
+        showVideos();
+        return setData();
     }
 
     const setVideos = () => {
         let data = opts[`${current}Data`];
-        let videos = data.items || data.data;
+        let videos = data.items || data.data || [];
+        videoList.innerHTML = '';
 
         if(videos.length > 0){
-            videoList.innerHTML = '';
             for(let i = 0; i < videos.length; i++){
                 createVideoThumb(videos[i], i);
             }
+        }else{
+            return errorHandling(411, data, 'There are no videos to display.')
         }
     }
 
@@ -285,10 +329,11 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
         // Set video source
         let video = v.snippet || v;
         let id = getVideoId(v);
-        let thumbs = video.thumbnails || video.pictures.sizes;
-        let defaultThumb = thumbs.default || thumbs.filter( thumb => thumb.width > 300 && thumb.width < 900)[0] || thumbs[0];
+        let thumbs = video.thumbnails || video.pictures.sizes || [];
+        let defaultThumb = thumbs.default || (thumbs.length ? thumbs.filter( thumb => thumb.width > 300 && thumb.width < 900)[0] : null) || thumbs[0];
+        if(!(id && video && thumbs && defaultThumb)) return errorHandling(400, video);
         let url = (defaultThumb.url ? 'url' : 'link');
-        if(!(id && video && thumbs && defaultThumb)) return errorHandling(L, video);
+        
 
         let i = new Image(defaultThumb.width, defaultThumb.height),
         img = document.createElement('img'),
@@ -331,7 +376,7 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
 
         },
         i.onerror = function() {
-            imgLi.remove(), errorHandling(e, video) 
+            imgLi.remove(), errorHandling(404, video) 
         },
         // load the image!
         i.src = defaultThumb[url];
@@ -363,7 +408,7 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
             id: id
         }
 
-        if(!(index && id)) return errorHandling(10);
+        if(!(index && id)) return errorHandling(409, returnObj, 'The following video doesn\'t seem to have an id. Cannot insert the video into body.');
 
         editor.runCommand( 'insert-video', returnObj )
         editor.stopCommand('insert-video')
@@ -423,7 +468,6 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
                 if(j > trail_amount) break;
             }
 
-            // TODO: fix;
             elements.map( el => ul.appendChild(el))
 
             r = r.cloneNode(true);
@@ -491,7 +535,6 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
     }
 
     const updatePage = (e) => {
-        // TODO: figure out page query
         let page = parseInt(e.currentTarget.dataset.page);
 
         if(current_page === page) return;
@@ -530,27 +573,41 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
         return null;
     }
 
-    // TODO: specify codes
-    const errorHandling = (e, a) => {
-        console.log(e, a);
+    const errorHandling = (error_code, item, message = null) => {
+        console.log(error_code, item, message);
 
-        // editor.notificationManager.open({
-        //     text: 'A test informational notification.',
-        //     type: 'info'
-        //   });
-        
-        // 10 <= e && e < 20 ? preloader.hide() : 20 <= e && e < 30 && $instance(".fr-video-deleting").removeClass("fr-video-deleting"), editor.events.trigger("videoManager.error", [{
-        //     code: e,
-        //     message: messages[e]
-        // }, a])
+        if(message){
+            let h2 = error.querySelector('h2');
+            h2.innerHTML = error_code + ' : ' + message;
+            h2.focus();
+            showError();
+        }
     }
 
-    // TODO: make this pretty.
-    const renderError = () => {
-        container.innerHTML = '';
-        let error = document.createElement('h2')
-        error.classList.add('error')
-        error.innerHTML = 'There were no video resources provided. Please provide at least one video source.'
-        container.appendChild(error);
+    const showVideos = () => {
+        preloader.style.display = 'none';
+        videoList.style.display = null;
+    }
+
+    const showPreloader = () => {
+        preloader.style.display = 'block';
+        videoList.style.display = 'none';
+    }
+
+    const hideError = () => {
+        error.style.height = '0px';
+        error.style.opacity = 0;
+        timeout = setTimeout( () => {
+            error.style.display = 'none';
+        }, 2000)
+    }
+
+    const showError = () => {
+        clearTimeout(timeout);
+        error.style.display = 'block';
+        let h2 = error.querySelector('h2');
+
+        error.style.height = h2.offsetHeight + 'px';
+        error.style.opacity = 1;
     }
 })
