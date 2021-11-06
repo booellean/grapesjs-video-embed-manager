@@ -1,6 +1,6 @@
 {
   "name": "grapesjs-video-embed-manager",
-  "version": "1.0.2-0",
+  "version": "1.0.2-1",
   "description": "A wrapper that turns the grapesjs video component into a dynamic experience, opening a modal similar to the GrapesJS Asset Manager. This plugin has been optimized to work with Youtube, Vimeo, and a local video server.",
   "main": "dist/grapesjs-video-embed-manager.min.js",
   "repository": {
