@@ -110,7 +110,7 @@ export default {
     // youtubeBeforeInsert: (video) => video.type = "youtube", return video
     youtubeBeforeInsert: null,
 
-      // returns the response
+    // returns the response
     // @example
     // vimeoBeforeInsert: (video) => video.type = "vimeo", return video
     vimeoBeforeInsert: null,
