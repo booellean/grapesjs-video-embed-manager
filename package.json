@@ -1,7 +1,7 @@
 {
   "name": "grapesjs-video-embed-manager",
   "version": "1.0.0",
-  "description": "Youtube Manager",
+  "description": "A wrapper that turns the grapesjs video component into a dynamic experience, opening a modal similar to the GrapesJS Asset Manager. This plugin has been optimized to work with Youtube, Vimeo, and a local video server.",
   "main": "dist/grapesjs-video-embed-manager.min.js",
   "repository": {
     "type": "git",
@@ -10,16 +10,26 @@
   "scripts": {
     "start": "grapesjs-cli serve --host=0.0.0.0",
     "build": "grapesjs-cli build",
-    "bump": "npm version patch -m 'Bump v%s'"
+    "bump": "npm version patch -m 'Bump v%s'",
+    "test": ""
   },
   "keywords": [
     "grapesjs",
-    "plugin"
+    "plugin",
+    "youtube",
+    "vimeo",
+    "video",
+    "videos",
+    "manager",
+    "embed"
   ],
   "devDependencies": {
     "grapesjs": "^0.17.27",
-    "grapesjs-blocks-basic": "^0.1.8",
     "grapesjs-cli": "^2.0.0"
+  },
+  "author": "Elliot \"booellean\" Forst",
+  "bugs": {
+    "url": "https://github.com/booellean/grapesjs-video-embed-manager/issues"
   },
   "license": "MIT"
 }
