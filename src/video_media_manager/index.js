@@ -1,31 +1,24 @@
 import defaults from './config/config';
 const css =  require('./css/styles.js');
-import pluginBlocks from 'grapesjs-blocks-basic';
 
 export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, options) => {
+    // Add components
     const domcv = editor.DomComponents.getType('video');
-    console.log(editor)
-    console.log(domcv);
-    // TODO: remove
-
     let dblclick = domcv.view.prototype.events.dblclick;
 
     // This is a little broken, but click events should never have more than an event passed
-    // TODO: notify that this is occuring to inform devs
     domcv.view.prototype.events.dblclick = 'onDblClick';
+
     domcv.view.prototype.onDblClick = function(e) {
         // Call original event if this was already setup
         // Video component normally doesn't have a double click event, so we should be safe
-        if(dblclick) domcv.view.prototype[dblclick](e);
         editor.runCommand('open-videos');
         component = editor.getSelected();
+
+        if(dblclick) domcv.view.prototype[dblclick](e);
     };
 
-    // TODO remove
-    pluginBlocks(editor, {})
-
     // Globals
-
     // Modal and current component
     let Modal, component;
 
@@ -60,21 +53,15 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
     // TODO: create a better listener
     editor.on('component:add', (model) => {
         if(model.attributes.type == 'video'){
-            console.log('added')
             component = model;
             editor.runCommand('open-videos');
         }
     })
 
-    // editor.on('all', (a, b, c) => {
-    //     console.log(a, b, c);
-    // })
-
-
     editor.Commands.add('open-videos', {
         run(editor, sender) {
-            console.log('open-videos');
-            console.log(editor, sender)
+            // console.log('open-videos');
+            // console.log(editor, sender)
             // Add an event listener to make pagination readable on small screen sizes
             window.addEventListener('resize', setPaginationBind );
             return open();
@@ -83,15 +70,15 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
             // Remove event listender
             window.removeEventListener('resize', setPaginationBind );
             dataContainer.remove();
-            console.log('open-videos stopped');
-            console.log(editor, sender)
+            // console.log('open-videos stopped');
+            // console.log(editor, sender)
         },
     });
 
     editor.Commands.add('insert-video', {
         run(editor, sender, options) {
-            console.log('insert-video');
-            console.log(options, sender);
+            // console.log('insert-video');
+            // console.log(options, sender);
 
             if(options.current == 'youtube'){
                 component.set('provider', 'yt');
@@ -112,10 +99,10 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
                 return;
             }
         },
-        stop(editor, sender) {
-            console.log('insert-video stopped');
-            console.log(editor, sender)
-        },
+        // stop(editor, sender) {
+            // console.log('insert-video stopped');
+            // console.log(editor, sender)
+        // },
     });
 
     const _init = () => {
@@ -145,7 +132,6 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
         setVideos();
         setPagination();
         Modal.setContent(dataContainer);
-        console.log(component);
     }
 
     // This should ideally be called once per page load
@@ -259,9 +245,6 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
         let params = opts[`${current}Params`] ? opts[`${current}Params`] : {};
         params['headers'] = ( opts[`${current}Headers`] ? opts[`${current}Headers`] : {} );
 
-        // TODO: setup the storage manager to save this and load here before hand
-        // Call setData here...
-
         return loadUrl ? 
             fetch( loadUrl + query, params )
             .then( async res => {
@@ -269,6 +252,7 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
 
                 if(res.ok){
                     if(current == 'youtube') data.page = current_page;
+                    if(opts[`${current}BeforeLoad`]) data = opts[`${current}BeforeLoad`](data);
                     opts[`${current}Data`] = data;
                     showVideos();
                     return setData();
@@ -290,6 +274,7 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
     const handleCallback = async (callback, query, params) => {
         let call = await callback(query, params);
 
+        if(typeof call !== "object") return errorHandling(406, callback, 'Callback return was invalid')
         if(call.error) return errorHandling(error.status, callback, error.message)
 
         opts[`${current}Data`] = call;
@@ -334,7 +319,6 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
         if(!(id && video && thumbs && defaultThumb)) return errorHandling(400, video);
         let url = (defaultThumb.url ? 'url' : 'link');
         
-
         let i = new Image(defaultThumb.width, defaultThumb.height),
         img = document.createElement('img'),
         figure = document.createElement("figure"),
@@ -362,8 +346,6 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
                 imgLi.classList.remove("video-empty")
             }
 
-            // TODO: fix event
-            // editor.events.trigger("videoManager.videoLoaded", [img])
             figure.appendChild(img);
 
             let title = video.title || video.name;
@@ -408,6 +390,7 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
             id: id
         }
 
+        if(opts[`${current}BeforeInsert`]) returnObj = opts[`${current}BeforeInsert`](returnObj);
         if(!(index && id)) return errorHandling(409, returnObj, 'The following video doesn\'t seem to have an id. Cannot insert the video into body.');
 
         editor.runCommand( 'insert-video', returnObj )
@@ -578,7 +561,7 @@ export default grapesjs.plugins.add('grapesjs-video-embed-manager', (editor, opt
 
         if(message){
             let h2 = error.querySelector('h2');
-            h2.innerHTML = error_code + ' : ' + message;
+            h2.innerHTML = '<span style="display=inline-block; vertical-align:top; font-size: .8rem;">&#10006;</span> &nbsp;' + error_code + ' : ' + message;
             h2.focus();
             showError();
         }
