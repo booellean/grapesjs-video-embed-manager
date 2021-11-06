@@ -1,6 +1,6 @@
 # Video Embed Manager
 
-[DEMO](##)
+[DEMO](https://grapesjs-video-embed-manager.glitch.me)
 
 ### HTML
 ```html
