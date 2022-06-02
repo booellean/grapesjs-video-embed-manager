@@ -11,7 +11,8 @@
     "start": "grapesjs-cli serve --host=0.0.0.0",
     "build": "grapesjs-cli build",
     "bump": "npm version patch -m 'Bump v%s'",
-    "test": ""
+    "test": "jest",
+    "test:dev": "jest --watch"
   },
   "keywords": [
     "grapesjs",
@@ -24,12 +25,27 @@
     "embed"
   ],
   "devDependencies": {
+    "@babel/preset-env": "^7.16.11",
+    "@types/jsdom": "^16.2.14",
+    "babel-jest": "^27.5.1",
     "grapesjs": "^0.17.27",
-    "grapesjs-cli": "^2.0.0"
+    "grapesjs-blocks-basic": "^0.1.8",
+    "grapesjs-cli": "^2.0.0",
+    "jest": "^27.5.1",
+    "jsdom": "^19.0.0"
   },
   "author": "Elliot \"booellean\" Forst",
   "bugs": {
     "url": "https://github.com/booellean/grapesjs-video-embed-manager/issues"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "testMatch": [
+      "<rootDir>/tests/specs/**/*.js"
+    ],
+    "setupFiles": [
+      "<rootDir>/tests/setup.js"
+    ]
   },
   "license": "MIT"
 }
