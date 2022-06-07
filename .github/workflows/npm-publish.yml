@@ -37,6 +37,7 @@ jobs:
           node-version: 16
           registry-url: https://registry.npmjs.org/
       - run: npm version --no-git-tag-version ${{ needs.version.outputs.version }}
+      - run: npm install
       - run: npm run build
       - run: npm ci
       - run: npm publish --access public
